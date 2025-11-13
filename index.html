@@ -281,7 +281,7 @@
         const files = await fetchDir(path);
         container.innerHTML = '';
         const back = document.createElement('button');
-        back.textContent = '⬅️ Back';
+        back.textContent = '⬅️';
         back.onclick = () => {
           const parts = path.split('/').filter(Boolean);
           parts.pop();
@@ -289,9 +289,7 @@
         };
         container.appendChild(back);
 
-        const tokenInput = document.createElement('input');
-        tokenInput.placeholder = 'GitHub Token (for editing)';
-        container.appendChild(tokenInput);
+        
 
         files.forEach(file => {
           const item = document.createElement('div');
