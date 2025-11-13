@@ -1,169 +1,317 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Ubuntu Emulator — Fixed</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ChromeOS — Liquid Glass Desktop</title>
   <style>
-    body {
+    :root {
+      --accent: rgba(100,140,255,0.9);
+      --glass-bg: rgba(255,255,255,0.12);
+      --glass-border: rgba(255,255,255,0.25);
+      --glass-strong: rgba(255,255,255,0.18);
+      --text: rgba(255,255,255,0.95);
+      --muted: rgba(255,255,255,0.7);
+      --shadow: 0 6px 22px rgba(10,20,40,0.45);
+      --blur-size: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
       margin: 0;
-      font-family: 'Ubuntu', sans-serif;
-      background: url('https://upload.wikimedia.org/wikipedia/commons/0/0d/Ubuntu_22.04_LTS_Default_Wallpaper.svg') center/cover no-repeat;
-      color: #eee;
+      font-family: Inter, system-ui, sans-serif;
+      background: linear-gradient(180deg,#071126 0%, #0f233d 100%);
+      color: var(--text);
       overflow: hidden;
     }
-    .top-bar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 38px;
-      background: rgba(30,30,30,0.6);
-      backdrop-filter: blur(10px);
+
+    .desktop {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      padding: 28px 28px 92px 28px;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 12px;
-      color: #eee;
-      z-index: 1000;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      gap: 18px;
+      user-select: none;
     }
-    .dock {
-      position: fixed;
-      bottom: 15px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 10px;
-      background: rgba(20,20,20,0.5);
+
+    .icon {
+      width: 96px; height: 96px;
+      border-radius: 18px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; color: var(--text);
+      font-size: 13px; padding: 10px; cursor: pointer;
+      backdrop-filter: blur(var(--blur-size));
+      border: 1px solid transparent; box-shadow: var(--shadow);
+      transition: transform .18s ease;
+      background: rgba(255,255,255,0.04);
+    }
+    .icon:hover { transform: translateY(-6px) scale(1.02); }
+
+    .shelf {
+      position: fixed; left: 24px; right: 24px; bottom: 24px;
+      height: 68px; border-radius: 22px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 12px; gap: 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 10px 40px rgba(2,6,20,0.6);
+      z-index: 30;
+    }
+
+    .shelf .left, .shelf .center, .shelf .right {
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .pill {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; background: rgba(255,255,255,0.06);
       backdrop-filter: blur(10px);
-      padding: 8px 16px;
-      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.1);
     }
-    .dock .icon {
-      font-size: 24px;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .dock .icon:hover {
-      transform: scale(1.2);
-    }
+
     .window {
       position: absolute;
-      background: rgba(40,40,40,0.6);
-      backdrop-filter: blur(8px);
-      border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-      color: #eee;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      width: 720px; height: 480px;
+      left: calc(50% - 360px); top: calc(50% - 240px);
+      border-radius: 14px; border: 1px solid var(--glass-border);
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      display: flex; flex-direction: column;
+      z-index: 50; transition: transform .15s ease;
     }
-    .window-header {
-      display: flex;
-      align-items: center;
-      background: rgba(20,20,20,0.4);
-      padding: 6px 10px;
-      cursor: grab;
+
+    .titlebar {
+      height: 48px; display: flex; align-items: center; gap: 8px;
+      padding: 0 12px;
     }
-    .window-body {
-      flex: 1;
-      padding: 10px;
-      overflow: auto;
-    }
-    .terminal {
-      background: #0b0f14;
-      color: #c8f7c8;
-      font-family: monospace;
-      padding: 10px;
-      border-radius: 6px;
-    }
+
+    .ctrl { width: 14px; height: 14px; border-radius: 50%; display: inline-block; cursor: pointer; }
+    .ctrl.close { background: #ff5f57; }
+    .ctrl.min { background: #ffbd2e; }
+    .ctrl.max { background: #28c840; }
+
+    .title { flex: 1; font-weight: 600; }
+
+    .content { flex: 1; padding: 16px; overflow: auto; }
+
+    .task-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; cursor: pointer; }
   </style>
 </head>
 <body>
-  <div class="top-bar">Ubuntu Emulator</div>
-  <div class="dock">
-    <div class="icon" data-app="terminal">💻</div>
-    <div class="icon" data-app="files">📁</div>
-    <div class="icon" data-app="notes">📝</div>
+  <div class="desktop" id="desktop">
+    <div class="icon" data-app="Files">📁<div>Files</div></div>
   </div>
 
-  <div id="windows"></div>
+  <div class="shelf">
+    <div class="left"></div>
+    <div class="center" id="taskbar"></div>
+    <div class="right"><div id="time"></div></div>
+  </div>
+
+  <template id="windowTpl">
+    <div class="window">
+      <div class="titlebar">
+        <span class="ctrl close"></span>
+        <span class="ctrl min"></span>
+        <span class="ctrl max"></span>
+        <div class="title">App</div>
+      </div>
+      <div class="content">App Content</div>
+    </div>
+  </template>
 
   <script>
-    const windowsEl = document.getElementById('windows');
-    let zIndex = 10;
+    const desktop = document.getElementById('desktop');
+    const taskbar = document.getElementById('taskbar');
+    let z = 100;
 
     const apps = {
-      terminal: {
-        title: 'Terminal',
-        content: `<div class='terminal'><div id='term-output'>user@ubuntu:~$ <br></div><input id='term-input' style='width:100%;background:transparent;border:none;color:inherit;outline:none;'></div>`
-      },
-      files: {
-        title: 'Files',
-        content: `<div>📄 file1.txt<br>📄 file2.png</div>`
-      },
-      notes: {
-        title: 'Notes',
-        content: `<textarea style='width:100%;height:100%;background:transparent;border:none;color:#eee;outline:none;'>Type notes here...</textarea>`
-      }
+      Files: 'This is your Files app.'
     };
 
-    document.querySelectorAll('.icon').forEach(icon => {
-      icon.addEventListener('click', () => {
-        openApp(icon.dataset.app);
-      });
+    function updateTime(){
+      const d = new Date();
+      document.getElementById('time').textContent = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    }
+    updateTime(); setInterval(updateTime,60000);
+
+    desktop.querySelectorAll('.icon').forEach(icon => {
+      icon.addEventListener('click', () => openWindow(icon.dataset.app));
     });
 
-    function openApp(appName) {
-      const app = apps[appName];
-      if (!app) return;
-      const win = document.createElement('div');
-      win.className = 'window';
-      win.style.top = `${60 + Math.random()*100}px`;
-      win.style.left = `${60 + Math.random()*100}px`;
-      win.style.width = '400px';
-      win.style.height = '300px';
-      win.style.zIndex = ++zIndex;
-      win.innerHTML = `<div class='window-header'>${app.title}</div><div class='window-body'>${app.content}</div>`;
-      windowsEl.appendChild(win);
-      makeDraggable(win);
-      if (appName === 'terminal') bindTerminal(win);
+    function openWindow(app){
+      const tpl = document.getElementById('windowTpl');
+      const win = tpl.content.firstElementChild.cloneNode(true);
+      win.querySelector('.title').textContent = app;
+      document.body.appendChild(win);
+      bringFront(win);
+      dragWindow(win);
+      controls(win, app);
+      addTask(app, win);
+
+      if(app === 'Files') loadFileManager(win.querySelector('.content'));
     }
 
-    function makeDraggable(win) {
-      const header = win.querySelector('.window-header');
-      header.addEventListener('mousedown', e => {
-        let startX = e.clientX, startY = e.clientY;
-        let rect = win.getBoundingClientRect();
-        function move(ev) {
-          win.style.left = rect.left + (ev.clientX - startX) + 'px';
-          win.style.top = rect.top + (ev.clientY - startY) + 'px';
-        }
-        function up() {
-          window.removeEventListener('mousemove', move);
-          window.removeEventListener('mouseup', up);
-        }
-        window.addEventListener('mousemove', move);
-        window.addEventListener('mouseup', up);
+    function bringFront(win){ win.style.zIndex = ++z; }
+
+    function dragWindow(win){
+      const bar = win.querySelector('.titlebar');
+      let ox, oy, sx, sy, dragging = false;
+      bar.addEventListener('mousedown', e => {
+        dragging = true; ox = e.clientX; oy = e.clientY; sx = win.offsetLeft; sy = win.offsetTop; bringFront(win);
       });
+      window.addEventListener('mousemove', e => {
+        if(!dragging) return;
+        win.style.left = sx + e.clientX - ox + 'px';
+        win.style.top = sy + e.clientY - oy + 'px';
+      });
+      window.addEventListener('mouseup', () => dragging = false);
     }
 
-    function bindTerminal(win) {
-      const input = win.querySelector('#term-input');
-      const output = win.querySelector('#term-output');
-      input.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
-          const cmd = input.value.trim();
-          input.value = '';
-          output.innerHTML += `$ ${cmd}<br>`;
-          if (cmd === 'help') output.innerHTML += 'Commands: help, date, clear, echo &lt;text&gt;<br>';
-          else if (cmd === 'date') output.innerHTML += new Date().toString() + '<br>';
-          else if (cmd === 'clear') output.innerHTML = 'user@ubuntu:~$ <br>';
-          else if (cmd.startsWith('echo ')) output.innerHTML += cmd.slice(5) + '<br>';
-          else output.innerHTML += `Command not found: ${cmd}<br>`;
-          output.scrollTop = output.scrollHeight;
+    function controls(win, app){
+      const close = win.querySelector('.close');
+      const min = win.querySelector('.min');
+      const max = win.querySelector('.max');
+      close.onclick = () => {
+        win.remove();
+        const task = document.querySelector(`[data-task='${app}']`);
+        if(task) task.remove();
+      };
+      min.onclick = () => {
+        win.style.display = 'none';
+        const task = document.querySelector(`[data-task='${app}']`);
+        if(task) task.classList.add('minimized');
+      };
+      max.onclick = () => {
+        if(win.dataset.max === '1'){
+          win.style.width = win.dataset.w;
+          win.style.height = win.dataset.h;
+          win.style.left = win.dataset.l;
+          win.style.top = win.dataset.t;
+          win.dataset.max = '0';
+        } else {
+          win.dataset.w = win.style.width;
+          win.dataset.h = win.style.height;
+          win.dataset.l = win.style.left;
+          win.dataset.t = win.style.top;
+          win.style.left = '0';
+          win.style.top = '0';
+          win.style.width = '100vw';
+          win.style.height = 'calc(100vh - 80px)';
+          win.dataset.max = '1';
         }
-      });
+      };
+    }
+
+    function addTask(app, win){
+      if(document.querySelector(`[data-task='${app}']`)) return;
+      const icon = document.createElement('div');
+      icon.className = 'task-icon';
+      icon.textContent = app[0];
+      icon.dataset.task = app;
+      icon.onclick = () => {
+        if(win.style.display === 'none') win.style.display = 'flex';
+        bringFront(win);
+      };
+      taskbar.appendChild(icon);
+    }
+
+    async function loadFileManager(container) {
+      container.innerHTML = '<div>Loading Files...</div>';
+      const repo = 'HrithuKrishna/WEB';
+      const api = `https://api.github.com/repos/${repo}/contents/`;
+
+      async function fetchDir(path = '') {
+        const res = await fetch(api + path);
+        return res.json();
+      }
+
+      async function renderDir(path = '') {
+        const files = await fetchDir(path);
+        container.innerHTML = '';
+        const back = document.createElement('button');
+        back.textContent = '⬅️ Back';
+        back.onclick = () => {
+          const parts = path.split('/').filter(Boolean);
+          parts.pop();
+          renderDir(parts.join('/'));
+        };
+        container.appendChild(back);
+
+        const tokenInput = document.createElement('input');
+        tokenInput.placeholder = 'GitHub Token (for editing)';
+        container.appendChild(tokenInput);
+
+        files.forEach(file => {
+          const item = document.createElement('div');
+          item.textContent = file.name;
+          item.style.cursor = 'pointer';
+          item.onclick = async () => {
+            if(file.type === 'dir') {
+              renderDir(file.path);
+            } else {
+              const res = await fetch(file.download_url);
+              const text = await res.text();
+              previewFile(file, text, tokenInput.value);
+            }
+          };
+          container.appendChild(item);
+        });
+      }
+
+      async function previewFile(file, text, token) {
+        container.innerHTML = '';
+        const title = document.createElement('h3');
+        title.textContent = file.name;
+        const textarea = document.createElement('textarea');
+        textarea.style.width = '100%';
+        textarea.style.height = '300px';
+        textarea.value = text;
+
+        const downloadBtn = document.createElement('button');
+        downloadBtn.textContent = 'Download';
+        downloadBtn.onclick = () => {
+          const blob = new Blob([textarea.value], {type:'text/plain'});
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = file.name;
+          a.click();
+        };
+
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'Save to GitHub';
+        saveBtn.onclick = async () => {
+          const content = btoa(unescape(encodeURIComponent(textarea.value)));
+          const res = await fetch(`https://api.github.com/repos/${file.repository?.full_name || 'HrithuKrishna/WEB'}/contents/${file.path}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `token ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              message: `Update ${file.name}`,
+              content: content,
+              sha: file.sha
+            })
+          });
+          alert('Saved: ' + res.status);
+        };
+
+        const back = document.createElement('button');
+        back.textContent = '⬅️ Back';
+        back.onclick = () => renderDir(file.path.split('/').slice(0, -1).join('/'));
+
+        container.append(title, textarea, downloadBtn, saveBtn, back);
+      }
+
+      renderDir('');
     }
   </script>
 </body>
