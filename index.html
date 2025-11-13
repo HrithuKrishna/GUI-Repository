@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ChromeOS — Liquid Glass Desktop</title>
+  <title>GUI-Repository</title>
   <style>
     :root {
       --accent: rgba(100,140,255,0.9);
@@ -102,6 +102,45 @@
     .content { flex: 1; padding: 16px; overflow: auto; }
 
     .task-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  
+    .glass-btn {
+    position: relative;
+    padding: 10px 25px; /* smaller size */
+    border: none;
+    border-radius: 12px; /* smaller curve */
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 14px; /* smaller text */
+    backdrop-filter: blur(10px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    box-shadow: 0 2px 10px rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .glass-btn::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.4), transparent 70%);
+    transform: translateX(-100%) rotate(45deg);
+    transition: transform 0.7s ease;
+  }
+
+  .glass-btn:hover::before {
+    transform: translateX(100%) rotate(45deg);
+  }
+
+  .glass-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.25);
+  }
+  
   </style>
 </head>
 <body>
@@ -110,7 +149,12 @@
   </div>
 
   <div class="shelf">
-    <div class="left"></div>
+    <div class="left">
+
+        <h3>Hrithu Krishna |</h3> <a href="https://www.instagram.com/hrithu.exe/" class="glass-btn">Instagram</a>
+        <a href="https://in.pinterest.com/hrithu_exe" class="glass-btn">Pinterest</a>
+
+    </div>
     <div class="center" id="taskbar"></div>
     <div class="right"><div id="time"></div></div>
   </div>
